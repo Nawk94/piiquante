@@ -101,17 +101,23 @@ exports.likeSauce = (req, res, next) => {
 
             // Si n'aime plus
             if (sauce.usersLiked.includes(req.body.userId) && req.body.like === 0) {
-                Sauce.updateOne({ _id: req.params.id }, { $inc: { likes: -1 }, $pull: { usersLiked: req.body.userId } })
-                    .then(() => res.status(201).json({ message: 'Vous n\'aimez plus cette sauce' }))
-                    .catch((error) => res.status(400).json({ error }));
-            }
+                sauce.likes--;
+                const index = sauce.usersLiked.indexOf(req.body.userId);
+                if (index !== -1) {
+                  sauce.usersLiked.splice(index, 1);
+                }
+                message = "Vous n'aimez plus cette sauce";
+              }
 
             // Si supprime le dislike
             if (sauce.usersDisliked.includes(req.body.userId) && req.body.like === 0) {
-                Sauce.updateOne({ _id: req.params.id }, { $inc: { dislikes: -1 }, $pull: { usersDisliked: req.body.userId } })
-                    .then(() => res.status(201).json({ message: 'Merci d\'avoir modifié votre vote' }))
-                    .catch((error) => res.status(400).json({ error }));
-            }
+                sauce.dislikes--;
+                const index = sauce.usersDisliked.indexOf(req.body.userId);
+                if (index !== -1) {
+                  sauce.usersDisliked.splice(index, 1);
+                }
+                message = "Merci d'avoir modifié votre vote";
+              }
         })
         .catch((error) => res.status(400).json({ message: 'Vous ne pouvez pas voter plusieurs fois pour la même sauce' }));
 };
