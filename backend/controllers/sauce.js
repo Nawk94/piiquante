@@ -81,41 +81,37 @@ exports.findAllSauces = (req, res, next) => {
     .catch(error => res.status(400).json({error}));
    };
 
-   //les likes 
-   exports.likeSauce = (req,res,next) => {
-        console.log(req.body);
-    Sauce.findOne({_id:req.params.id})
-    .then((sauce)=> {
-        
-    //Si pas encore voté et like 
-    if(!sauce.usersLiked.includes(req.body.userId) && !sauce.usersDisliked.includes(req.body.userId) && req.body.like ===1) {
-        Sauce.updateOne({_id:req.params.id}, { $inc:{likes:1},$push:{usersLiked:req.body.userId}})
-        .then(() => res.status(201).json({message: 'vous aimez cette sauce'}))
-        .catch((error) => res.status(400).json({error}));
-    }
+// Les likes
+exports.likeSauce = (req, res, next) => {
+    Sauce.findOne({ _id: req.params.id })
+        .then((sauce) => {
+            // Si pas encore voté et like
+            if (!sauce.usersLiked.includes(req.body.userId) && !sauce.usersDisliked.includes(req.body.userId) && req.body.like === 1) {
+                Sauce.updateOne({ _id: req.params.id }, { $inc: { likes: 1 }, $push: { usersLiked: req.body.userId } })
+                    .then(() => res.status(201).json({ message: 'Vous aimez cette sauce' }))
+                    .catch((error) => res.status(400).json({ error }));
+            }
 
-    //si pas encore voté et dislike
-    if(!sauce.usersLiked.includes(req.body.userId) && !sauce.usersDisliked.includes(req.body.userId) && req.body.like === -1) {
-        Sauce.updateOne({_id: req.params.userId}, {$inc:{dislikes:1},$push:{usersDisliked:req.body.userId}})
-        .then(() => res.status(201).json({message: 'Vous n\'aimez pas cette sauce'}))
-        .catch((error) => res.status(400).json({error}));
-    }
+            // Si pas encore voté et dislike
+            if (!sauce.usersLiked.includes(req.body.userId) && !sauce.usersDisliked.includes(req.body.userId) && req.body.like === -1) {
+                Sauce.updateOne({ _id: req.params.id }, { $inc: { dislikes: 1 }, $push: { usersDisliked: req.body.userId } })
+                    .then(() => res.status(201).json({ message: 'Vous n\'aimez pas cette sauce' }))
+                    .catch((error) => res.status(400).json({ error }));
+            }
 
-    //s'il n'aime plus 
-    if(sauce.usersLiked.includes(req.body.userId) && req.body.like === 0) {      
-        Sauce.updateOne({_id:req.params.userId}, {$inc:{likes: -1},$pull:{usersLiked:req.body.userId}})
-        .then(() => res.status(201).json({message: 'Vous n\'aimez plus cette sauce'}))
-        .catch((error) => res.status(400).json({error}));
-    }
+            // Si n'aime plus
+            if (sauce.usersLiked.includes(req.body.userId) && req.body.like === 0) {
+                Sauce.updateOne({ _id: req.params.id }, { $inc: { likes: -1 }, $pull: { usersLiked: req.body.userId } })
+                    .then(() => res.status(201).json({ message: 'Vous n\'aimez plus cette sauce' }))
+                    .catch((error) => res.status(400).json({ error }));
+            }
 
-    //s'il supprime le dislike
-    if(sauce.usersDisliked.includes(req.body.userId) && req.body.like === 0) {
-        Sauce.updateOne({_id:req.params.userId}, {$inc:{dislikes: -1},$pull:{usersDisliked:req.body.userId}})
-        .then(() => res.status(201).json({message : 'Merci d\'avoir modifié votre vote'}))
-        .catch((error => res.status(400).json({error})));
-    }
-
-    
-    })
-    .catch((error)=> res.status(400).json({message:'Vous ne pouvez pas voter plusieurs fois pour la même sauce'}));
-   }
+            // Si supprime le dislike
+            if (sauce.usersDisliked.includes(req.body.userId) && req.body.like === 0) {
+                Sauce.updateOne({ _id: req.params.id }, { $inc: { dislikes: -1 }, $pull: { usersDisliked: req.body.userId } })
+                    .then(() => res.status(201).json({ message: 'Merci d\'avoir modifié votre vote' }))
+                    .catch((error) => res.status(400).json({ error }));
+            }
+        })
+        .catch((error) => res.status(400).json({ message: 'Vous ne pouvez pas voter plusieurs fois pour la même sauce' }));
+};
