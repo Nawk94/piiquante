@@ -6,6 +6,14 @@ const fs = require('fs');
 const { pluralize } = require('mongoose');
 
 
+//récupération de toutes les sauces
+exports.findAllSauces = (req, res, next) => {
+    Sauce.find()
+    //le tableau des sauces
+    .then(response => res.status(200).json(response))
+    .catch(error => res.status(400).json({error}));
+   };
+
 
 //création d'une sauce
 exports.createSauce = (req, res, next) => {
@@ -28,7 +36,7 @@ exports.createSauce = (req, res, next) => {
   };
 
   //modification d'une sauce
-  exports.modifySauce = (req,res,next) => {
+exports.modifySauce = (req,res,next) => {
     // on vérifie si une image est présente
     const sauceObject = req.filename?{
         //si oui 
@@ -81,16 +89,9 @@ exports.findOneSauce = (req,res,next) => {
     .catch(error => res.status(404).json({error}));
 };
 
-//récupération de toutes les sauces
-exports.findAllSauces = (req, res, next) => {
-    Sauce.find()
-    //le tableau des sauces
-    .then(response => res.status(200).json(response))
-    .catch(error => res.status(400).json({error}));
-   };
 
    //les likes 
-   exports.likeSauce = (req,res,next) => {
+exports.likeSauce = (req,res,next) => {
         console.log(req.body);
     Sauce.findOne({_id:req.params.id})
     .then(sauce => {
