@@ -41,17 +41,18 @@ exports.modifySauce = (req,res,next) => {
         //Si oui 
         ...JSON.parse(req.body.sauce),
         imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
-    } : {...req.body}; //Si pas d'images on récup le "corps"
+    } : {...req.body}; //Si pas d'images on use les données du body de la requête
 
-    
+    //On supprime la propriété 
     delete sauceObject._userId;
    
     Sauce.findOne({_id:req.params.id})
     .then((sauce) => {
-        
+        //On vérifie si l'user peut modifier la sauce
         if(sauce.userId != req.auth.userId) { 
             res.status(400).json({message: 'Action non autorisée'});
         } else { 
+            //Mise a jour de la base 
             Sauce.updateOne({_id: req.params.id},{...sauceObject,_id:req.params.id})
             .then(() => res.status(200).json({message: 'Sauce modifiée'}))
             .catch(error => res.status(401).json({error}));

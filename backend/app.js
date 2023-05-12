@@ -21,11 +21,11 @@ mongoose.connect(process.env.F_VAR,
 
 
 
-//création de l'application
+//Création de l'application
 const app = express();
 
 
-// CORS
+//CORS
 app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content, Accept, Content-Type, Authorization');
@@ -36,7 +36,7 @@ app.use((req, res, next) => {
 
 app.use(express.json());
 
-//définition de la destination des images
+//Définition de la destination des images
 
 app.use('/api/sauces', productRoutes);
 app.use('/api/auth', userRoutes);
