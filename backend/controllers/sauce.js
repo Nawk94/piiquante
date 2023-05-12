@@ -3,6 +3,8 @@ const Sauce = require('../models/Sauce');
 
 const fs = require('fs');
 
+const { pluralize } = require('mongoose');
+
 
 
 //création d'une sauce
@@ -25,27 +27,30 @@ exports.createSauce = (req, res, next) => {
     .catch(error => res.status(400).json({error}));
   };
 
-//modification d'une sauce
-exports.modifySauce = (req,res,next) => {
-    let sauceObject = {};
-    req.file ? (
-        Sauce.findOne({_id:req.params.id})
-        .then(sauce => {
-            if(req.auth.userId !== sauce.userId){
-                res.status(403).json({message: 'Action non autorisée'})
-            } else {
-                const filename = sauce.imageUrl.split("/").at(-1);
-                fs.unlinkSync(`images/${filename}`)
-            }
-        }),
-        sauceObject = {
-            ...JSON.parse(req.body.sauce),
-            imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`, 
+  //modification d'une sauce
+  exports.modifySauce = (req,res,next) => {
+    // on vérifie si une image est présente
+    const sauceObject = req.filename?{
+        //si oui 
+        ...JSON.parse(req.body.sauce),
+        imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
+    } : {...req.body}; // si pas d'images on récup le "corps"
+
+    
+    delete sauceObject._userId;
+   
+    Sauce.findOne({_id:req.params.id})
+    .then((sauce) => {
+        
+        if(sauce.userId != req.auth.userId) { 
+            res.status(400).json({message: 'Action non autorisée'});
+        } else { 
+            Sauce.updateOne({_id: req.params.id},{...sauceObject,_id:req.params.id})
+            .then(() => res.status(200).json({message: 'Sauce modifiée'}))
+            .catch(error => res.status(401).json({error}));
         }
-    ) : sauceObjet = {...req.body};
-    Sauce.updateOne({_id: req.params.id},{...sauceObject, _id: req.params.id})
-    .then(() => res.statuts(200).json({message : 'Sauce modifiée'}))
-    .catch((error) => res.status(400).json({error}))
+    })
+    .catch((error) => {res.status(400).json({error})});
 };
 
 //suppresion d'une sauce 
@@ -109,7 +114,7 @@ exports.findAllSauces = (req, res, next) => {
         } else {
             if (sauce.usersLiked.includes(req.body.userId)) {
                 Sauce.updateOne({ _id: req.params.id }, { $pull: { usersLiked: req.body.userId }, $inc: { likes: -1 } })
-                    .then(() => { res.status(200).json({ message: 'Vous n\'aimez pplus cette sauce' }) })
+                    .then(() => { res.status(200).json({ message: 'Vous n\'aimez plus cette sauce' }) })
                     .catch(error => res.status(400).json({ error }));
             } else if (sauce.usersDisliked.includes(req.body.userId)) {
                 Sauce.updateOne({ _id: req.params.id }, { $pull: { usersDisliked: req.body.userId }, $inc: { dislikes: -1 } })
