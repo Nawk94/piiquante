@@ -3,7 +3,6 @@ const Sauce = require('../models/Sauce');
 
 const fs = require('fs');
 
-const { pluralize } = require('mongoose');
 
 
 //récupération de toutes les sauces
@@ -91,38 +90,63 @@ exports.findOneSauce = (req,res,next) => {
 
 
    //les likes 
-exports.likeSauce = (req,res,next) => {
-        console.log(req.body);
-    Sauce.findOne({_id:req.params.id})
-    .then(sauce => {
-        if (req.body.like === 1) {
-            if (sauce.usersLiked.includes(req.body.userId)) {
-                res.status(401).json({error: 'Vous aimez déjà cette sauce'});
+   exports.likeSauce = (req, res, next) => {
+    const likeValue = req.body.like; //Valeur possible : 1, -1, 0
+    const userId = req.body.userId; //ID de l'user
+
+    Sauce.findOne({ _id: req.params.id })
+        .then((sauce) => {
+            if (likeValue === 1) {
+                //S'il aime déjà la sauce
+                if (sauce.usersLiked.includes(userId)) {
+                    res.status(401).json({ error: 'Vous aimez déjà cette sauce' });
+                } else {
+                    //S'il aime la sauce
+                    //On ajoute son ID aux "liker"
+                    sauce.usersLiked.push(userId); 
+                    //On augmente les likes
+                    sauce.likes++; 
+                }
+            } else if (likeValue === -1) {
+                // S'il a déjà "disliker"
+                if (sauce.usersDisliked.includes(userId)) {
+                    res.status(401).json({ error: 'Vous ne pouvez pas voter plusieurs fois pour la même sauce' });
+                } else {
+                    //S'il n'aime pas la sauce
+                    //On ajoute son ID aux "disliker"
+                    sauce.usersDisliked.push(userId);
+                    //On augmente les dislikes 
+                    sauce.dislikes++; 
+                }
             } else {
-                Sauce.updateOne({ _id: req.params.id }, { $inc: { likes: req.body.like++ }, $push: { usersLiked: req.body.userId } })
-                    .then(() => res.status(200).json({ message: 'Vous aimez cette sauce' }))
-                    .catch(error => res.status(400).json({ error }))
+                // Annulation du like/dislike
+                if (sauce.usersLiked.includes(userId)) {
+                    //S'il annule son like
+                    //On supprime son ID des liker
+                    sauce.usersLiked.pull(userId);
+                    //On réduit les likes
+                    sauce.likes--; 
+                } else if (sauce.usersDisliked.includes(userId)) {
+                    //S'il annule son dislike
+                    //On supprime son ID des "disliker" 
+                    sauce.usersDisliked.pull(userId);
+                    //On réduit les dislikes 
+                    sauce.dislikes--; 
+                }
             }
-        } 
-        else if (req.body.like === -1) {
-            if (sauce.usersDisliked.includes(req.body.userId)) {
-                res.status(401).json({error: 'Vous ne pouver pas voter plusieurs fois pour la même sauce'});
-            } else {
-                Sauce.updateOne({ _id: req.params.id }, { $inc: { dislikes: (req.body.like++) * -1 }, $push: { usersDisliked: req.body.userId } })
-                    .then(() => res.status(200).json({ message: 'Vous n\'aimez pas cette sauce' }))
-                    .catch(error => res.status(400).json({ error }));
-            }
-        } else {
-            if (sauce.usersLiked.includes(req.body.userId)) {
-                Sauce.updateOne({ _id: req.params.id }, { $pull: { usersLiked: req.body.userId }, $inc: { likes: -1 } })
-                    .then(() => { res.status(200).json({ message: 'Vous n\'aimez plus cette sauce' }) })
-                    .catch(error => res.status(400).json({ error }));
-            } else if (sauce.usersDisliked.includes(req.body.userId)) {
-                Sauce.updateOne({ _id: req.params.id }, { $pull: { usersDisliked: req.body.userId }, $inc: { dislikes: -1 } })
-                        .then(() => { res.status(200).json({ message: 'Merci d\'avoir modifié votre votre' }) })
-                        .catch(error => res.status(400).json({ error }));
-            }
-        }
-    })
-    .catch(error => res.status(400).json({ error }));   
+
+            // Mise à jour de la sauce dans la base de données
+            sauce.save()
+                .then(() => {
+                    if (likeValue === 1) {
+                        res.status(200).json({ message: 'Vous aimez cette sauce' });
+                    } else if (likeValue === -1) {
+                        res.status(200).json({ message: 'Vous n\'aimez pas cette sauce' });
+                    } else {
+                        res.status(200).json({ message: 'Modification du like/dislike effectuée' });
+                    }
+                })
+                .catch(error => res.status(400).json({ error }));
+        })
+        .catch(error => res.status(400).json({ error }));
 };
