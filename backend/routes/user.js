@@ -1,5 +1,5 @@
 
-//on importe express et le modele pour l'user
+//On importe express et le modele pour l'user
 const express = require('express');
 const router = express.Router();
 

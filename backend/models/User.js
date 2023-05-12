@@ -1,9 +1,9 @@
-// on importe moongose et unique validator
+//On importe moongose et unique validator
 const mongoose = require('mongoose');
 
 const uniqueValidator = require('mongoose-unique-validator');
 
-//schéma de données
+//Schéma de données
 const userSchema = mongoose.Schema({
     email: {type: String, required:true, unique:true},
     password: {type:String, required:true}
