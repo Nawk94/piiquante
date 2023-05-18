@@ -12,7 +12,7 @@ const productRoutes = require('./routes/sauce');
 
 const userRoutes = require('./routes/user');
 
-//.env => process.env
+//.env => process.env.MAVA
 //Connection à la base de données
 mongoose.connect(process.env.F_VAR,
 { useNewUrlParser: true, useUnifiedTopology: true })
@@ -36,10 +36,11 @@ app.use((req, res, next) => {
 
 app.use(express.json());
 
-//Définition de la destination des images
+
 
 app.use('/api/sauces', productRoutes);
 app.use('/api/auth', userRoutes);
+//Définition de la destination des images
 app.use('/images', express.static(path.join(__dirname, 'images')));
 
 module.exports = app;

@@ -123,7 +123,7 @@ exports.findOneSauce = (req,res,next) => {
                 // Annulation du like/dislike
                 if (sauce.usersLiked.includes(userId)) {
                     //S'il annule son like
-                    //On supprime son ID des liker
+                    //On supprime son ID des "liker"
                     sauce.usersLiked.pull(userId);
                     //On réduit les likes
                     sauce.likes--; 
@@ -144,7 +144,7 @@ exports.findOneSauce = (req,res,next) => {
                     } else if (likeValue === -1) {
                         res.status(200).json({ message: 'Vous n\'aimez pas cette sauce' });
                     } else {
-                        res.status(200).json({ message: 'Modification du like/dislike effectuée' });
+                        res.status(200).json({ message: 'Votre changement d\'avis est bien pris en compte' });
                     }
                 })
                 .catch(error => res.status(400).json({ error }));
