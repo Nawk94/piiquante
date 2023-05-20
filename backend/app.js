@@ -6,6 +6,7 @@ require('dotenv').config();
 
 const mongoose = require('mongoose');
 
+//pour gerer
 const path = require('path');
 
 const productRoutes = require('./routes/sauce');

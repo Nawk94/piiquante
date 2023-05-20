@@ -92,7 +92,7 @@ exports.findOneSauce = (req,res,next) => {
 
    //Les likes 
    exports.likeSauce = (req, res, next) => {
-    const likeValue = req.body.like; //Valeur possible : 1, -1, 0
+    const likeValue = req.body.like; //Valeur possible : 1, -1, 0 
     const userId = req.body.userId; //ID de l'user
 
     Sauce.findOne({ _id: req.params.id })

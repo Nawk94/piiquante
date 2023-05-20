@@ -10,6 +10,7 @@ const jwt = require('jsonwebtoken');
 
 //Fonction de création d'utilisateur
 exports.signup = (req, res, next) => {
+    //On cherche si un user existe deja avec le mail 
     User.findOne({ email: req.body.email })
       .then((existingUser) => {
         if (existingUser) {
